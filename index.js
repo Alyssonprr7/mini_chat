@@ -2,9 +2,9 @@
 net = require('net');
 const { exec } = require('child_process');
 
-
 // Keep track of the chat clients
 var clients = [];
+
 
 // Start a TCP Server
 net.createServer(function (socket) {
@@ -43,7 +43,7 @@ net.createServer(function (socket) {
     clients.splice(clients.indexOf(socket), 1);
     broadcast(socket.name + " parou de chatear.\n");
   });
-  
+   
   // Send a message to all clients
   function broadcast(message, sender) {
     clients.forEach(function (client) {
