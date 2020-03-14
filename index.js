@@ -23,7 +23,7 @@ net.createServer(function (socket) {
           socket.name = data.split(':')[1].replace('\\r\\n','')
           socket.write("olá, pode chatear agora " + socket.name + "\n");
             // Send a nice welcome message and announce
-            broadcast(socket.name + " Entrou no Chat\n", socket);
+            broadcast(socket.name + " Conectou ao chat\n", socket);
 
       }else if(data.startsWith('exec:')){
         var code = data.split(':')[1]
@@ -41,7 +41,7 @@ net.createServer(function (socket) {
   // Remove the client from the list when it leaves
   socket.on('end', function () {
     clients.splice(clients.indexOf(socket), 1);
-    broadcast(socket.name + " parou de chatear.\n");
+    broadcast(socket.name + " Desconectou do chat.\n");
   });
    
   // Send a message to all clients
