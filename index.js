@@ -29,8 +29,7 @@ net.createServer(function (socket) {
           socket.id = Math.random()*10
           room.push(socket.id)
           rooms.push(socket.roomName)
-          console.log(room)
-          console.log(rooms)
+          console.log(clients)
         
           socket.write("olá, pode chatear agora " + socket.name + "\n");
             // Send a nice welcome message and announce
@@ -68,6 +67,14 @@ net.createServer(function (socket) {
       if (client === sender) return;
       client.write(message);
     });
+     // Send a message just for the room
+  // function broadcastRoom(message, sender, room) {
+  //   clients.forEach(function (client) {
+  //     // Don't want to send it to sender
+  //     if (client === sender) return;
+  //     client.write(message);
+  //   });
+
     // Log it to the server output too
     process.stdout.write(message)
   }
