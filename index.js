@@ -30,7 +30,8 @@ net.createServer(function (socket) {
           room.push(socket.id)
           rooms.push(socket.roomName)
           console.log(room)
-          console.log(socket.roomName)
+          console.log(rooms)
+        
           socket.write("olá, pode chatear agora " + socket.name + "\n");
             // Send a nice welcome message and announce
             broadcast(socket.name + " Conectou ao chat \n", socket);
@@ -41,6 +42,11 @@ net.createServer(function (socket) {
       //       broadcast(`${code} ->   ${out.toString()}`)
       //   })
       
+    }else if (data.startsWith('listarSalas')){
+      var i;
+      for (i = 0; i<rooms.length; i++){
+        socket.write(rooms[i] + '\n')
+      }
     }
       else if(socket.name === null ){
           socket.write("Me diga seu nome. Digite 'name: SEUNOME: NomedaSala: FIM'\n")
