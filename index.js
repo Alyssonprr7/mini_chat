@@ -4,9 +4,7 @@ const { exec } = require('child_process');
 
 // Keep track of the chat clients
 var clients = [];
-//Array of clients 
-var room = [];
-//Array of rooms
+//Array of roomsNames
 var rooms = []; 
 
 
@@ -33,7 +31,7 @@ net.createServer(function (socket) {
         
           socket.write("olá, pode chatear agora " + socket.name + "\n");
             // Send a nice welcome message and announce
-            broadcast(socket.name + " Conectou ao chat \n", socket);
+            broadcast(socket.name + " Conectou ao chat \n", socket, socket.roomName);
       
       // }else if(data.startsWith('exec:')){
       //   var code = data.split(':')[1]
@@ -50,7 +48,7 @@ net.createServer(function (socket) {
       else if(socket.name === null ){
           socket.write("Me diga seu nome. Digite 'name: SEUNOME: NomedaSala: FIM'\n")
       }else{
-        broadcast(socket.name + "> " + data, socket);
+        broadcast(socket.name + "> " + data, socket, socket.roomName);
       }
   });
 
@@ -61,12 +59,14 @@ net.createServer(function (socket) {
   });
    
   // Send a message to all clients
-  function broadcast(message, sender) {
+  function broadcast(message, sender,room) {
     clients.forEach(function (client) {
       // Don't want to send it to sender
       if (client === sender) return;
+      if (room != client.roomName) return; 
       client.write(message);
     });
+
      // Send a message just for the room
   // function broadcastRoom(message, sender, room) {
   //   clients.forEach(function (client) {
