@@ -2,6 +2,12 @@
 net = require('net');
 const { exec } = require('child_process');
 
+//Loading and setting package color
+var colors = require('colors');
+colors.setTheme({
+  custom: ['cyan', 'blue', 'magenta', 'white', 'grey']
+});
+
 // Keep track of the chat clients
 var clients = [];
 //Array of roomsNames
@@ -25,62 +31,47 @@ net.createServer(function (socket) {
           socket.name = data.split(':')[1].replace('\\r\\n','')
           socket.roomName = data.split(':')[2].replace('\\r\\n','')
           rooms.push(socket.roomName)
-          console.log(clients)
-        
-          socket.write("Olá, pode chatear agora " + socket.name + "\n" + "Você está na sala: " + socket.roomName+"\n");
-            // Send a nice welcome message and announce
-            broadcast(socket.name + " Conectou nessa sala \n", socket, socket.roomName);
-      
-      // }else if(data.startsWith('exec:')){
-      //   var code = data.split(':')[1]
-      //   exec(`node -e "console.log(${code})"`,{},(e,out,err)=>{
-      //       broadcast(`${code} ->   ${out.toString()}`)
-      //   })
+          socket.write("Olá, pode chatear agora " + socket.name + "\n" + "Você está na sala: " + colors.yellow(socket.roomName)+"\n");
+          // Send a nice welcome message and announce
+          broadcast(colors.green(socket.name) + " Conectou nessa sala \n", socket.name, socket.roomName);
       
     }else if (data.startsWith('listarSalas')){
       var uniqueRooms = [... new Set(rooms)]
       var i;
       for (i = 0; i<uniqueRooms.length; i++){
-        socket.write(uniqueRooms[i] + '\n')
+        socket.write(colors.yellow(uniqueRooms[i]) + '\n')
       }
     } //Change the room 
       else if(data.startsWith('mudarSala:')){
-      var NewName = data.split(':')[1].replace('\\r\\n','')
+      var NewName = data.split(':')[1].replace('\r\n','')
       changeRoom(socket.name, NewName, socket.roomName)
-      socket.write(socket.name + " seja bem-vindo a sala " + socket.roomName)
-      broadcast(socket.name + " Conectou nessa sala \n", socket, socket.roomName);
-    }else if(data.startsWith('.exit')){
-      Delete(socket.name, socket.roomName)
+      socket.write(socket.name + " seja bem-vindo a sala " + colors.yellow(socket.roomName) + "\n")
+      broadcast(colors.green(socket.name) + " Conectou na sala" + colors.yellow(socket.roomName) + "\n", socket.name, socket.roomName);
+    //}else if(data.startsWith('.exit')){
     }
       else if(socket.name === null ){
           socket.write("Me diga seu nome e a sala. Digite 'name: SEUNOME: NomedaSala: FIM'\n")
       }else{
-        broadcast(socket.name + "("+ socket.roomName +")" + ">" + data, socket, socket.roomName);
+        broadcast(socket.name + colors.yellow("(")+ colors.yellow(socket.roomName) +colors.yellow(")") + ">" + data, socket, socket.roomName);
       }
   });
 
   // Remove the client from the list when it leaves
   socket.on('end', function () {
     clients.splice(clients.indexOf(socket), 1);
-    broadcast(socket.name + " Desconectou do chat.\n");
+    broadcast(colors.red(socket.name) + " Desconectou do chat.\n");
   });
-
-function Delete(name, atualRoom){
-  clients.forEach(function(client){
-    if(client.name == name){
-      clients.splice(client, 1);
-      broadcast(name + " Desconectou do chat.\n", name, atualRoom);
-  }})};
 
   function changeRoom(name, newRoom,atualRoom){
     clients.forEach(function(client){
       if(client.name == name){
         client.roomName = newRoom;
         rooms.push(newRoom)
+        console.log(clients)
       }
 
     })
-    broadcast(name + " Desconectou da sala("+ atualRoom +").\n", name, atualRoom)
+    broadcast(colors.red(name) + " Desconectou da sala("+ colors.yellow(atualRoom) +").\n", name, atualRoom)
     
   }
    
