@@ -24,14 +24,12 @@ net.createServer(function (socket) {
           console.log("kkkkkk", data)
           socket.name = data.split(':')[1].replace('\\r\\n','')
           socket.roomName = data.split(':')[2].replace('\\r\\n','')
-          socket.id = Math.random()*10
-          room.push(socket.id)
           rooms.push(socket.roomName)
           console.log(clients)
         
-          socket.write("olá, pode chatear agora " + socket.name + "\n");
+          socket.write("Olá, pode chatear agora " + socket.name + "\n" + "Você está na sala: " + socket.roomName+"\n");
             // Send a nice welcome message and announce
-            broadcast(socket.name + " Conectou ao chat \n", socket, socket.roomName);
+            broadcast(socket.name + " Conectou nessa sala \n", socket, socket.roomName);
       
       // }else if(data.startsWith('exec:')){
       //   var code = data.split(':')[1]
@@ -40,15 +38,24 @@ net.createServer(function (socket) {
       //   })
       
     }else if (data.startsWith('listarSalas')){
+      var uniqueRooms = [... new Set(rooms)]
       var i;
-      for (i = 0; i<rooms.length; i++){
-        socket.write(rooms[i] + '\n')
+      for (i = 0; i<uniqueRooms.length; i++){
+        socket.write(uniqueRooms[i] + '\n')
       }
+    } //Change the room 
+      else if(data.startsWith('mudarSala:')){
+      var NewName = data.split(':')[1].replace('\\r\\n','')
+      changeRoom(socket.name, NewName, socket.roomName)
+      socket.write(socket.name + " seja bem-vindo a sala " + socket.roomName)
+      broadcast(socket.name + " Conectou nessa sala \n", socket, socket.roomName);
+    }else if(data.startsWith('.exit')){
+      Delete(socket.name, socket.roomName)
     }
       else if(socket.name === null ){
-          socket.write("Me diga seu nome. Digite 'name: SEUNOME: NomedaSala: FIM'\n")
+          socket.write("Me diga seu nome e a sala. Digite 'name: SEUNOME: NomedaSala: FIM'\n")
       }else{
-        broadcast(socket.name + "> " + data, socket, socket.roomName);
+        broadcast(socket.name + "("+ socket.roomName +")" + ">" + data, socket, socket.roomName);
       }
   });
 
@@ -57,23 +64,35 @@ net.createServer(function (socket) {
     clients.splice(clients.indexOf(socket), 1);
     broadcast(socket.name + " Desconectou do chat.\n");
   });
+
+function Delete(name, atualRoom){
+  clients.forEach(function(client){
+    if(client.name == name){
+      clients.splice(client, 1);
+      broadcast(name + " Desconectou do chat.\n", name, atualRoom);
+  }})};
+
+  function changeRoom(name, newRoom,atualRoom){
+    clients.forEach(function(client){
+      if(client.name == name){
+        client.roomName = newRoom;
+        rooms.push(newRoom)
+      }
+
+    })
+    broadcast(name + " Desconectou da sala("+ atualRoom +").\n", name, atualRoom)
+    
+  }
    
   // Send a message to all clients
   function broadcast(message, sender,room) {
     clients.forEach(function (client) {
       // Don't want to send it to sender
       if (client === sender) return;
+      // Don't send to other room
       if (room != client.roomName) return; 
       client.write(message);
     });
-
-     // Send a message just for the room
-  // function broadcastRoom(message, sender, room) {
-  //   clients.forEach(function (client) {
-  //     // Don't want to send it to sender
-  //     if (client === sender) return;
-  //     client.write(message);
-  //   });
 
     // Log it to the server output too
     process.stdout.write(message)
