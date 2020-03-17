@@ -32,6 +32,7 @@ net.createServer(function (socket) {
           broadcast(colors.green(socket.name) + " Conectou nessa sala \n", socket.name, socket.roomName);
       
     }else if (data.startsWith('listarSalas')){
+      var uniqueRooms = [...new Set(rooms)]
       var i;
       for (i = 0; i<uniqueRooms.length; i++){
         socket.write(colors.yellow(uniqueRooms[i]) + '\n')
@@ -42,11 +43,13 @@ net.createServer(function (socket) {
       changeRoom(socket.name, NewName, socket.roomName)
       socket.write(socket.name + " seja bem-vindo a sala " + colors.yellow(socket.roomName) + "\n")
       broadcast(colors.green(socket.name) + " Conectou na sala " + colors.yellow(socket.roomName) + "\n", socket.name, socket.roomName);
-    //}else if(data.startsWith('.exit')){
+    }else if(data.startsWith('.exit')){
+      socket.end("Obrigado por usar nosso serviço, " + colors.red(socket.name))
+
     }else if (data.startsWith('deletarSala:')){
       var room = data.split(':')[1].replace('\r\n','')
       deleteRoom(room)
-      socket.write("Se a sala " + colors.red(room) + " existia, ela foi deletada\n")
+      socket.write("Se a sala " + colors.yellow(room) + " existia, ela foi "+ colors.red("deletada\n"))
     }
       else if(socket.name === null ){
           socket.write("Me diga seu nome e a sala. Digite 'name: SEUNOME: NomedaSala: FIM'\n")
@@ -61,6 +64,10 @@ net.createServer(function (socket) {
     broadcast(colors.red(socket.name) + " Desconectou do chat.\n");
   });
 
+  socket.on('close', function (){
+    
+  });
+
   //Change the room when the user wants
   function changeRoom(name, newRoom,atualRoom){
     clients.forEach(function(client){
@@ -73,13 +80,13 @@ net.createServer(function (socket) {
   }
 
   function deleteRoom (deletableRoom){
-    rooms.forEach(function(room){
-      if(deletableRoom == room){
-        rooms.splice(rooms.indexOf(room), 1)
-        clients.forEach(function(client){
-          if(client.room = deletableRoom){
-            client.roomName = rooms[0]
-            client.write("Sua sala foi deletada por algum usuário\nVocê foi transferido para a " + colors.yellow("SalaGeral\n") ) 
+    clients.forEach(function(client){
+      if(client.roomName == deletableRoom){
+        client.roomName = rooms[0]
+        client.write("Sua sala foi deletada por algum usuário\nVocê foi transferido para a " + colors.yellow("SalaGeral\n"))
+        rooms.forEach(function(room){
+          if(room == deletableRoom){
+            rooms.splice(rooms.indexOf(room), 1)
           }
         })
       }
